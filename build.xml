@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="cortica" default="package" basedir=".">
+
+	<property name="appName" value="cortica" />
+
+	<property environment="ENV" />
+
+	<property file="versions.properties" />
+
+	<property name="dir.bin" value="bin" />
+	<property name="dir.conf" value="conf" />
+	<property name="dir.dist" value="dist" />
+	<property name="dir.lib" value="lib" />
+	<property name="dir.src" value="src" />
+	<property name="dir.tomcat" value="${ENV.TOMCAT_HOME}/lib" />
+
+	<path id="path.main">
+		<fileset dir="${dir.lib}" includes="*.jar" />
+		<pathelement path="${dir.bin}" />
+	</path>
+	<path id="path.catalina.ant">
+		<fileset dir="${dir.tomcat}" includes="*.jar" />
+	</path>
+
+	<!-- Tomcat management tasks. -->
+	<taskdef name="tomcat-deploy" classname="org.apache.catalina.ant.DeployTask" classpathref="path.catalina.ant" />
+	<taskdef name="tomcat-list" classname="org.apache.catalina.ant.ListTask" classpathref="path.catalina.ant" />
+	<taskdef name="tomcat-reload" classname="org.apache.catalina.ant.ReloadTask" classpathref="path.catalina.ant" />
+	<taskdef name="tomcat-start" classname="org.apache.catalina.ant.StartTask" classpathref="path.catalina.ant" />
+	<taskdef name="tomcat-stop" classname="org.apache.catalina.ant.StopTask" classpathref="path.catalina.ant" />
+	<taskdef name="tomcat-undeploy" classname="org.apache.catalina.ant.UndeployTask" classpathref="path.catalina.ant" />
+
+	<target name="prepare">
+		<mkdir dir="${dir.bin}" />
+		<mkdir dir="${dir.dist}" />
+		<mkdir dir="${dir.lib}" />
+		<mkdir dir="${dir.tomcat}" />
+	</target>
+
+	<target name="resolve" depends="prepare" description="Retrieve DEPENDENT libraries.">
+		<ivy:retrieve sync="true" />
+	</target>
+
+	<target name="compile" depends="resolve">
+		<javac srcdir="${dir.src}" destdir="${dir.bin}" classpathref="path.main" debug="true" />
+	</target>
+
+	<target name="package" depends="compile">
+        <war destfile="${dir.dist}/${appName}.war" webxml="${dir.conf}/web.xml">
+			<classes dir="${dir.bin}" includes="**/*.class" />
+			<lib dir="${dir.lib}" includes="*.jar" excludes="javaee-web-api-6.0.jar" />
+			<webinf dir="${dir.conf}">
+				<include name="applicationContext.xml" />
+				<include name="rest-servlet.xml" />
+			</webinf>
+			<metainf dir="${dir.conf}" includes="context.xml" />
+        </war>
+	</target>
+
+	<!-- REMOVE build directories. -->
+	<target name="clean">
+		<delete dir="${dir.bin}" />
+		<delete dir="${dir.dist}" />
+		<delete dir="${dir.lib}" />
+	</target>
+
+	<target name="full" depends="clean,package" />
+
+	<!-- TOMCAT tasks. -->
+	<target name="tomcat-prepare" unless="tomcat.url">
+		<echo message="Setting default Tomcat deployment properties ..." />
+		<property name="tomcat.url" value="http://localhost:8080/manager/text" />
+		<property name="tomcat.username" value="tomcat" />
+		<property name="tomcat.password" value="tomcat" />
+		<property name="tomcat.path" value="/cortica" />
+	</target>
+	
+	<target name="deploy" depends="tomcat-prepare">
+		<tomcat-deploy url="${tomcat.url}" username="${tomcat.username}"
+			password="${tomcat.password}" path="${tomcat.path}" war="file:${dir.dist}/${appName}.war" />
+	</target>
+	<target name="list" depends="tomcat-prepare">
+		<tomcat-list url="${tomcat.url}" username="${tomcat.username}"
+			password="${tomcat.password}" outputproperty="tomcat.list" />
+		<echo message="${tomcat.list}" />
+	</target>
+	<target name="redeploy" depends="undeploy,deploy" />
+	<target name="reload" depends="tomcat-prepare">
+		<tomcat-reload url="${tomcat.url}" username="${tomcat.username}"
+			password="${tomcat.password}" path="${tomcat.path}" />
+	</target>
+	<target name="start" depends="tomcat-prepare">
+		<tomcat-start url="${tomcat.url}" username="${tomcat.username}"
+			password="${tomcat.password}" path="${tomcat.path}" />
+	</target>
+	<target name="stop" depends="tomcat-prepare">
+		<tomcat-stop url="${tomcat.url}" username="${tomcat.username}"
+			password="${tomcat.password}" path="${tomcat.path}" />
+	</target>
+	<target name="undeploy" depends="tomcat-prepare">
+		<tomcat-undeploy url="${tomcat.url}" username="${tomcat.username}"
+			password="${tomcat.password}" path="${tomcat.path}" />
+	</target>
+
+</project>

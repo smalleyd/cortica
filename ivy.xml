@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ivy-module version="2.0">
+	<info organisation="cortica.test" module="smalleyd" />
+
+	<!-- Closest to default Maven retrieval scheme. -->
+	<configurations defaultconf="default" />
+
+	<dependencies>
+		<dependency org="org.springframework" name="spring-aop" rev="${spring.version}" />
+		<dependency org="org.springframework" name="spring-context" rev="${spring.version}" />
+		<dependency org="org.springframework" name="spring-web" rev="${spring.version}" />
+		<dependency org="org.springframework" name="spring-webmvc" rev="${spring.version}" />
+		<dependency org="org.aspectj" name="aspectjweaver" rev="${aspectj.version}" />
+		<dependency org="org.aspectj" name="aspectjrt" rev="${aspectj.version}" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="${jackson.version}" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="${jackson.version}"/>
+		<!-- dependency org="com.fasterxml.jackson.module" name="jackson-module-jaxb-annotations" rev="${jackson.version}"/ -->
+		<dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-xml" rev="${jackson.version}"/>
+		<dependency org="javax" name="javaee-web-api" rev="${javaee.version}" />
+	</dependencies>
+</ivy-module>
