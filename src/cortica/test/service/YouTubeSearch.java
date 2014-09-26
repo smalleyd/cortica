@@ -3,6 +3,8 @@ package cortica.test.service;
 import java.io.*;
 import java.util.concurrent.Future;
 
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -24,6 +26,7 @@ import cortica.test.value.*;
 public class YouTubeSearch
 {
 	private static final String CALL_URL = "http://gdata.youtube.com/feeds/api/videos?alt=json&q={query}";
+	@Resource(name="defaultRestTemplate") RestTemplate template;	// RestTemplate is thread safe. DLS on 9/26/2014.
 
 	/** Call You Tube and retrieve data. */
 	@Async
