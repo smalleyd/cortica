@@ -1,6 +1,7 @@
 package cortica.test.service;
 
 import java.io.*;
+import java.util.*;
 import java.util.concurrent.Future;
 
 import javax.annotation.Resource;
@@ -10,7 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.web.client.RestTemplate;
 
-import cortica.test.value.GoogleNewsFeed;
+import cortica.test.value.NewsItem;
 
 /** Performs RESTful call to Google News.
  *  
@@ -30,8 +31,34 @@ public class GoogleNewsSearch
 
 	/** Call Google News and retrieve data. */
 	@Async
-	public Future<GoogleNewsFeed> makeCall(String query) throws IOException
+	public Future<List<NewsItem>> retrieve(String query) throws IOException
 	{
-		return new AsyncResult<GoogleNewsFeed>(template.getForObject(CALL_URL, GoogleNewsFeed.class, query));
+		return new AsyncResult<List<NewsItem>>(transform(makeCall(query)));
+	}
+
+	/** Makes the RESTful call and retrieves the data. */
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> makeCall(String query) throws IOException
+	{
+		return template.getForObject(CALL_URL, Map.class, query);
+	}
+
+	/** Transforms the raw data into the Cortica results format. */
+	@SuppressWarnings("unchecked")
+	public List<NewsItem> transform(Map<String, Object> values)
+	{
+		Map<String, Object> channel = (Map<String, Object>) values.get("channel");
+		if (null == channel)
+			return Collections.EMPTY_LIST;
+
+		// Based on the raw payload this should be a list but the default XML converter
+		// only retrieves a single "item". Would need to implement a custom XMLMapper.
+		Map<String, Object> item = (Map<String, Object>) channel.get("item");
+		if (null == item)
+			return Collections.EMPTY_LIST;
+
+		return Arrays.asList(new NewsItem((String) item.get("title"),
+		                                  (String) item.get("link"),
+		                                  (String) item.get("pubDate")));
 	}
 }

@@ -40,12 +40,12 @@ public class MainController
 	public Map<String, Object> search(@RequestParam(value="q") String q) throws Exception
 	{
 
-		Future<GoogleNewsFeed> googleNewsResult = googleNewsSearch.makeCall(q);
-		Future<YouTubeFeed> youTubeResult = youTubeSearch.makeCall(q);
+		Future<List<NewsItem>> googleNewsResult = googleNewsSearch.retrieve(q);
+		Future<List<NewsItem>> youTubeResult = youTubeSearch.retrieve(q);
 
 		Map<String, Object> results = new HashMap<>(2);
-		results.put("NewsResponse", new SearchResponse<GoogleNewsFeed>(q, googleNewsResult.get()));
-		results.put("YTResponse", new SearchResponse<YouTubeFeed>(q, youTubeResult.get()));
+		results.put("NewsResponse", new SearchResponse<List<NewsItem>>(q, googleNewsResult.get()));
+		results.put("YTResponse", new SearchResponse<List<NewsItem>>(q, youTubeResult.get()));
 
 		return results;
 	}
